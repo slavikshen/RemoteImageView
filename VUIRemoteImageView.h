@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "VRemoteImage.h"
+#import "VRemoteImageDownloader.h"
 
 #if TARGET_OS_IPHONE
 #define VRemoteImageViewSuperClass UIImageView

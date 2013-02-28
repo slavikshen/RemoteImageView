@@ -7,8 +7,6 @@
 //
 
 #import "VUIRemoteImageView.h"
-#import "VRemoteImage.h"
-#import "VRemoteImageDownloader.h"
 
 static dispatch_queue_t gThumbImageViewDecodeQueue;
 

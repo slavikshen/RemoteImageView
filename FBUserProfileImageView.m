@@ -48,15 +48,17 @@
 
 - (NSString*)_srcPath {
     NSString* userID = self.userID;
-
     NSString* path = nil;
-    if( _ignoreSize ) {
-        path = [NSString stringWithFormat:@"%@/picture", userID];
-    } else {
-        CGSize size = self.bounds.size;
-        NSInteger w = (NSInteger)size.width;
-        NSInteger h = (NSInteger)size.height;
-        path = [NSString stringWithFormat:@"%@/picture?width=%ld&height=%ld", userID, w, h];
+    
+    if( userID ) {
+        if( _ignoreSize ) {
+            path = [NSString stringWithFormat:@"%@/picture", userID];
+        } else {
+            CGSize size = self.bounds.size;
+            NSInteger w = (NSInteger)size.width;
+            NSInteger h = (NSInteger)size.height;
+            path = [NSString stringWithFormat:@"%@/picture?width=%ld&height=%ld", userID, w, h];
+        }
     }
     return path;
 }
@@ -64,7 +66,7 @@
 - (void)startLoadingUserProfileImage {
     
     NSString* path = [self _srcPath];
-    NSImage* img = [NSImage imageNamed:path];
+    NSImage* img = ( path ? [NSImage imageNamed:path] : nil );
     if( img ) {
         self.image = img;
     } else {
@@ -74,7 +76,7 @@
 
 }
 
--(void)didReceiveImage:(NSImage*)image {
+-(void)didReceiveImage:(VRemoteImage*)image {
     
     [super didReceiveImage:image];
     

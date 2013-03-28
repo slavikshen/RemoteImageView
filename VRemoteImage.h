@@ -18,11 +18,14 @@
 
 + (void)setCachePathURL:(NSURL*)URL;
 + (NSURL*)cacehPathURL;
++ (NSURL*)fileURLForURLStr:(NSString*)urlStr;
 
 + (void)saveImage:(NSData*)data forURL:(NSString*)URLStr;
-+ (VRemoteImage*)imageForURL:(NSString*)URLStr;
-+ (void)clearImageCache;
 
++ (VRemoteImage*)imageForURL:(NSString*)URLStr;
++ (BOOL)cacheExistsForURL:(NSString*)URLStr;
+
++ (void)clearImageCache;
 + (void)clearExpiredImageCache;
 
 + (CGSize)sizeOfCachedImage:(NSString*)URLStr;

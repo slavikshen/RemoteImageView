@@ -52,6 +52,10 @@
 }
 
 - (void)downloadImageForURL:(NSString*)urlStr; {
+
+#if DEBUG
+    NSLog(@"downloadImageForURL: %@", urlStr);
+#endif
     
     NSArray* operations = _queue.operations;
     VRemoteImageDownloadOperation* oper = nil;

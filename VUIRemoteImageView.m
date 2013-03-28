@@ -119,7 +119,6 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
 
     if( _src.length ) {
         // cancel previous loading request
-//        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_loadImage:) object:nil];
         [[VRemoteImageDownloader sharedInstance] cancelDownloadImageForURL:_src];
     }
     
@@ -140,11 +139,8 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
         } else {
             self.isLoading = YES;
             self.image = [self defaultImage];
-            dispatch_async(gThumbImageViewDecodeQueue, ^() {
-                [[VRemoteImageDownloader sharedInstance] downloadImageForURL:_src];
-            });
+            [[VRemoteImageDownloader sharedInstance] downloadImageForURL:_src];
         }
-        
         
     }
 

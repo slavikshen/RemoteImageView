@@ -75,6 +75,16 @@ NSURL* gThumbImageCacheURL = nil;
     return image;
 }
 
++ (BOOL)cacheExistsForURL:(NSString*)URLStr {
+
+    NSURL* fileURL = [self fileURLForURLStr:URLStr];
+    NSFileManager* fm = [NSFileManager defaultManager];
+    
+    BOOL exists = [fm fileExistsAtPath:fileURL.path];
+
+    return exists;
+}
+
 + (void)clearImageCache {
 
     NSFileManager* fm = [NSFileManager defaultManager];

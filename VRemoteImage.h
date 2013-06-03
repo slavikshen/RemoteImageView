@@ -23,6 +23,7 @@
 + (void)saveImage:(NSData*)data forURL:(NSString*)URLStr;
 
 + (VRemoteImage*)imageForURL:(NSString*)URLStr;
++ (NSData*)imageDataForURL:(NSString*)URLStr;
 + (BOOL)cacheExistsForURL:(NSString*)URLStr;
 
 + (void)clearImageCache;

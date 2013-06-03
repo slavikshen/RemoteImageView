@@ -69,11 +69,17 @@ NSURL* gThumbImageCacheURL = nil;
 }
 
 + (VRemoteImage*)imageForURL:(NSString*)URLStr {
-    NSURL* fileURL = [self fileURLForURLStr:URLStr];
-    NSData* data = [NSData dataWithContentsOfURL:fileURL];
-    VRemoteImage* image = [[VRemoteImage alloc] initWithData:data];
+    NSData* data = [self imageDataForURL:URLStr];
+    VRemoteImage* image = ( data ? [[VRemoteImage alloc] initWithData:data] : nil );
     return image;
 }
+
++ (NSData*)imageDataForURL:(NSString*)URLStr {
+    NSURL* fileURL = [self fileURLForURLStr:URLStr];
+    NSData* data = [NSData dataWithContentsOfURL:fileURL];
+    return data;
+}
+
 
 + (BOOL)cacheExistsForURL:(NSString*)URLStr {
 

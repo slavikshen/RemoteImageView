@@ -10,9 +10,25 @@
 
 @interface FBUserProfileImageView()
 
+#if !TARGET_OS_IPHONE
++ (NSCache*)globalFBProfileImageCache;
+#endif
+
 @end
 
 @implementation FBUserProfileImageView
+
+#if !TARGET_OS_IPHONE
++ (NSCache*)globalFBProfileImageCache {
+    static NSCache* cache = nil;
+    NSAssert([NSThread isMainThread], @"You shall never use the fb profile image cache in none main thread");
+    if( nil == cache ) {
+        cache = [[NSCache alloc] init];
+        [cache setName:@"FBUserProfileImageView_ImageCache"];
+    }
+    return cache;
+}
+#endif
 
 - (void)dealloc {
 
@@ -66,24 +82,32 @@
 - (void)startLoadingUserProfileImage {
     
     NSString* path = [self _srcPath];
-    NSImage* img = ( path ? [NSImage imageNamed:path] : nil );
+#if !TARGET_OS_IPHONE
+    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
+    NSImage* img = ( path ? [cache objectForKey:path] : nil );
     if( img ) {
         self.image = img;
-    } else {
+    } else if( path ) {
         NSString* ogurl = [NSString stringWithFormat:@"https://graph.facebook.com/%@", path];
         self.src = ogurl;
     }
+#else
+    NSString* ogurl = [NSString stringWithFormat:@"https://graph.facebook.com/%@", path];
+    self.src = ogurl;
+#endif
 
 }
 
+#if !TARGET_OS_IPHONE
 -(void)didReceiveImage:(VRemoteImage*)image {
     
     [super didReceiveImage:image];
-    
     NSString* path = [self _srcPath];
-    [image setName:path];
+    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
+    [cache setObject:image forKey:path];
 
 }
+#endif
 
 - (void)drawRect:(NSRect)dirtyRect
 {

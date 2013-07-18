@@ -10,25 +10,25 @@
 
 @interface FBUserProfileImageView()
 
-#if !TARGET_OS_IPHONE
-+ (NSCache*)globalFBProfileImageCache;
-#endif
+//#if !TARGET_OS_IPHONE
+//+ (NSCache*)globalFBProfileImageCache;
+//#endif
 
 @end
 
 @implementation FBUserProfileImageView
 
-#if !TARGET_OS_IPHONE
-+ (NSCache*)globalFBProfileImageCache {
-    static NSCache* cache = nil;
-    NSAssert([NSThread isMainThread], @"You shall never use the fb profile image cache in none main thread");
-    if( nil == cache ) {
-        cache = [[NSCache alloc] init];
-        [cache setName:@"FBUserProfileImageView_ImageCache"];
-    }
-    return cache;
-}
-#endif
+//#if !TARGET_OS_IPHONE
+//+ (NSCache*)globalFBProfileImageCache {
+//    static NSCache* cache = nil;
+//    NSAssert([NSThread isMainThread], @"You shall never use the fb profile image cache in none main thread");
+//    if( nil == cache ) {
+//        cache = [[NSCache alloc] init];
+//        [cache setName:@"FBUserProfileImageView_ImageCache"];
+//    }
+//    return cache;
+//}
+//#endif
 
 - (void)dealloc {
 
@@ -68,7 +68,11 @@
     
     if( userID ) {
         if( _ignoreSize ) {
-            path = [NSString stringWithFormat:@"%@/picture", userID];
+            if( [[NSScreen mainScreen] backingScaleFactor] >1 ) {
+                path = [NSString stringWithFormat:@"%@/picture?width=128&height=128", userID];
+            } else {
+                path = [NSString stringWithFormat:@"%@/picture?width=64&height=64", userID];
+            }
         } else {
             CGSize size = self.bounds.size;
             NSInteger w = (NSInteger)size.width;
@@ -83,11 +87,12 @@
     
     NSString* path = [self _srcPath];
 #if !TARGET_OS_IPHONE
-    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
-    NSImage* img = ( path ? [cache objectForKey:path] : nil );
-    if( img ) {
-        self.image = img;
-    } else if( path ) {
+//    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
+//    NSImage* img = ( path ? [cache objectForKey:path] : nil );
+//    if( img ) {
+//        self.image = img;
+//    } else
+    if( path ) {
         NSString* ogurl = [NSString stringWithFormat:@"https://graph.facebook.com/%@", path];
         self.src = ogurl;
     }
@@ -98,16 +103,16 @@
 
 }
 
-#if !TARGET_OS_IPHONE
--(void)didReceiveImage:(VRemoteImage*)image {
-    
-    [super didReceiveImage:image];
-    NSString* path = [self _srcPath];
-    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
-    [cache setObject:image forKey:path];
-
-}
-#endif
+//#if !TARGET_OS_IPHONE
+//-(void)didReceiveImage:(VRemoteImage*)image {
+//    
+//    [super didReceiveImage:image];
+//    NSString* path = [self _srcPath];
+//    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
+//    [cache setObject:image forKey:path];
+//
+//}
+//#endif
 
 - (void)drawRect:(NSRect)dirtyRect
 {

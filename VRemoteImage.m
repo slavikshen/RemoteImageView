@@ -11,26 +11,13 @@
 #import <ImageIO/ImageIO.h>
 
 NSURL* gThumbImageCacheURL = nil;
+NSMutableDictionary* gHostCachePathURLs = nil;
 
 @implementation VRemoteImage
 
 
 + (void)setCachePathURL:(NSURL*)URL {
-
     gThumbImageCacheURL = URL;
-
-    NSFileManager* fm = [NSFileManager defaultManager];    
-    NSURL* cachePath = gThumbImageCacheURL;
-    
-    if( ![fm fileExistsAtPath:cachePath.path] ) {
-        NSError* err = nil;
-        [fm createDirectoryAtURL:cachePath withIntermediateDirectories:YES attributes:nil error:&err];
-        #ifdef DEBUG
-        if( err ) {
-            NSLog(@"Error in creating thumb path: %@", err);
-        }
-        #endif
-    }
 }
 
 + (NSURL*)cacehPathURL {
@@ -47,16 +34,52 @@ NSURL* gThumbImageCacheURL = nil;
     NSURL* rootURL = [fm URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&err];
     NSURL* cachePath = [NSURL URLWithString:@"VThumbImages/" relativeToURL:rootURL];
     
+    gHostCachePathURLs = [NSMutableDictionary dictionaryWithCapacity:8];
+    
     [self setCachePathURL:cachePath];
+
+}
+
++ (NSURL*)cachePathURLForHost:(NSString*)host {
+
+    NSURL* url = gHostCachePathURLs[host];
+    if( nil == url ) {
+        // make a new host url
+        
+        NSFileManager* fm = [NSFileManager defaultManager];
+        NSString* path = [NSString stringWithFormat:@"%@/", host];
+        NSURL* cachePath = [NSURL URLWithString:path relativeToURL:gThumbImageCacheURL];
+    
+        if( ![fm fileExistsAtPath:cachePath.path] ) {
+            NSError* err = nil;
+            [fm createDirectoryAtURL:cachePath withIntermediateDirectories:YES attributes:nil error:&err];
+            #ifdef DEBUG
+            if( err ) {
+                NSLog(@"Error in creating thumb path: %@", err);
+            }
+            #endif
+        }
+    
+        gHostCachePathURLs[host] = cachePath;
+        
+        url = cachePath;        
+    }
+    
+    return url;
+    
 
 }
 
 + (NSURL*)fileURLForURLStr:(NSString*)urlStr {
 
-    NSURL* cachePath = [self cacehPathURL];
     NSString* md5 = [urlStr MD5];
+    NSURL* url = [NSURL URLWithString:urlStr];
+    NSString* host = [url host];
+    
+    NSURL* cachePath = [self cachePathURLForHost:host];
+    
     NSString* fileName = [NSString stringWithFormat:@"thumb_%@.png", md5];
-   
+    
     NSURL* fileURL = [NSURL URLWithString:fileName relativeToURL:cachePath];
     
     return fileURL;

@@ -119,12 +119,10 @@ NSMutableDictionary* gHostCachePathURLs = nil;
     NSFileManager* fm = [NSFileManager defaultManager];
     NSError* err = nil;
     NSURL* cachePath = [self cacehPathURL];
+    
+    [fm removeItemAtURL:cachePath error:&err];
+    [fm createDirectoryAtURL:cachePath withIntermediateDirectories:YES attributes:nil error:&err];
 
-    NSArray* files = [fm contentsOfDirectoryAtPath:cachePath.path error:&err];
-    for( NSString* f in files ) {
-        NSString* fullpath = [NSString stringWithFormat:@"%@/%@", cachePath, f];
-        [fm removeItemAtPath:fullpath error:&err];
-    }
 }
 
 + (void)clearExpiredImageCache {

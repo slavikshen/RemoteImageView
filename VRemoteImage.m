@@ -122,6 +122,8 @@ NSMutableDictionary* gHostCachePathURLs = nil;
     
     [fm removeItemAtURL:cachePath error:&err];
     [fm createDirectoryAtURL:cachePath withIntermediateDirectories:YES attributes:nil error:&err];
+    
+    gHostCachePathURLs = [NSMutableDictionary dictionaryWithCapacity:8];
 
 }
 

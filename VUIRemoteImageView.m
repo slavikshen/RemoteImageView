@@ -113,7 +113,7 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
 
 - (void)setSrc:(NSString *)thumbURLStr {
 
-    if( [_src isEqualToString:thumbURLStr] ) {
+    if( _src == thumbURLStr || [_src isEqualToString:thumbURLStr] ) {
         return;
     }
 
@@ -130,12 +130,17 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
     
     if( _src.length ) {
         
-        //取消之前的请求
-        //请求图片
-
         VRemoteImage* image = [VRemoteImage imageForURL:_src];
         if( image ) {
             self.image = image;
+            if( self.updateImageOlderThanBaseline ) {
+                NSDate* baseline = [VRemoteImage baselineTime];
+                if( [image.timestamp compare:baseline] < 0 ) {
+                    // make request to update image
+                    self.isLoading = YES;
+                    [[VRemoteImageDownloader sharedInstance] downloadImageForURL:_src];
+                }
+            }
         } else {
             self.isLoading = YES;
             self.image = [self defaultImage];

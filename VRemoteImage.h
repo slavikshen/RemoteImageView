@@ -16,6 +16,8 @@
 
 @interface VRemoteImage : VRemoteImageSuperClass
 
+@property (nonatomic,readonly) NSDate* timestamp;
+
 + (void)setCachePathURL:(NSURL*)URL;
 + (NSURL*)cacehPathURL;
 + (NSURL*)fileURLForURLStr:(NSString*)urlStr;
@@ -28,7 +30,11 @@
 
 + (void)clearImageCache;
 + (void)clearExpiredImageCache;
++ (void)clearImageCacheForHost:(NSString*)host;
++ (void)clearImageCacheBySizeLimit:(NSUInteger)limit;
 
 + (CGSize)sizeOfCachedImage:(NSString*)URLStr;
+
++ (NSDate*)baselineTime;
 
 @end

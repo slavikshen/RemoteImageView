@@ -40,6 +40,22 @@
 
 }
 
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if( self ) {
+        self.updateImageOlderThanBaseline = YES;
+    }
+    return self;
+}
+
+- (id)initWithFrame:(NSRect)frameRect {
+    self = [super initWithFrame:frameRect];
+    if( self ) {
+        self.updateImageOlderThanBaseline = YES;
+    }
+    return self;
+}
+
 - (void)setUserID:(NSString *)userID {
 
     if( [_userID isEqualToString:userID] ) {
@@ -86,33 +102,12 @@
 - (void)startLoadingUserProfileImage {
     
     NSString* path = [self _srcPath];
-#if !TARGET_OS_IPHONE
-//    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
-//    NSImage* img = ( path ? [cache objectForKey:path] : nil );
-//    if( img ) {
-//        self.image = img;
-//    } else
     if( path ) {
         NSString* ogurl = [NSString stringWithFormat:@"https://graph.facebook.com/%@", path];
         self.src = ogurl;
     }
-#else
-    NSString* ogurl = [NSString stringWithFormat:@"https://graph.facebook.com/%@", path];
-    self.src = ogurl;
-#endif
 
 }
-
-//#if !TARGET_OS_IPHONE
-//-(void)didReceiveImage:(VRemoteImage*)image {
-//    
-//    [super didReceiveImage:image];
-//    NSString* path = [self _srcPath];
-//    NSCache* cache = [FBUserProfileImageView globalFBProfileImageCache];
-//    [cache setObject:image forKey:path];
-//
-//}
-//#endif
 
 - (void)drawRect:(NSRect)dirtyRect
 {

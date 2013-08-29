@@ -32,6 +32,7 @@
 @property(nonatomic,copy) NSString* src;
 @property(nonatomic,assign) id<ThumbImageViewDelegate> delegate;
 @property(nonatomic,readonly,assign) BOOL isLoading;
+@property(nonatomic,assign) BOOL updateImageOlderThanBaseline;
 
 - (void)didReceiveImage:(VRemoteImage*)image;
 

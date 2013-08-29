@@ -12,9 +12,19 @@
 
 NSURL* gThumbImageCacheURL = nil;
 NSMutableDictionary* gHostCachePathURLs = nil;
+NSDate* gBaselineTime = nil;
 
-@implementation VRemoteImage
+@implementation VRemoteImage {
 
+    NSDate* _timestamp;
+
+}
+
+@synthesize timestamp = _timestamp;
+
++ (NSDate*)baselineTime {
+    return gBaselineTime;
+}
 
 + (void)setCachePathURL:(NSURL*)URL {
     gThumbImageCacheURL = URL;
@@ -27,6 +37,8 @@ NSMutableDictionary* gHostCachePathURLs = nil;
 + (void)initialize {
 
     [super initialize];
+    
+    gBaselineTime = [NSDate date];
     
     // prepare default cache path
     NSFileManager* fm = [NSFileManager defaultManager];
@@ -92,8 +104,19 @@ NSMutableDictionary* gHostCachePathURLs = nil;
 }
 
 + (VRemoteImage*)imageForURL:(NSString*)URLStr {
-    NSData* data = [self imageDataForURL:URLStr];
-    VRemoteImage* image = ( data ? [[VRemoteImage alloc] initWithData:data] : nil );
+    NSURL* fileURL = [self fileURLForURLStr:URLStr];
+    NSString* path = fileURL.path;
+    
+    VRemoteImage* image = nil;
+    
+    NSFileManager* fm = [NSFileManager defaultManager];
+    if( [fm fileExistsAtPath:path] ) {
+        image = [[VRemoteImage alloc] initWithContentsOfURL:fileURL];
+        NSError* err = nil;
+        NSDictionary* attrs = [fm attributesOfItemAtPath:path error:&err];
+        NSDate* timestamp = attrs[NSFileModificationDate];
+        image->_timestamp = timestamp;
+    }
     return image;
 }
 
@@ -172,6 +195,81 @@ NSMutableDictionary* gHostCachePathURLs = nil;
         [fm removeItemAtURL:f error:&e];
     }
     
+}
+
++ (void)clearImageCacheForHost:(NSString*)host {
+
+    [gHostCachePathURLs removeObjectForKey:host];
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSString* path = [NSString stringWithFormat:@"%@/", host];
+    NSURL* cachePath = [NSURL URLWithString:path relativeToURL:gThumbImageCacheURL];
+    
+    if( [fm fileExistsAtPath:cachePath.path] ) {
+        NSError* err = nil;
+        [fm removeItemAtURL:cachePath error:&err];
+    }
+
+}
+
++ (void)clearImageCacheBySizeLimit:(NSUInteger)limit {
+
+    // enum all images under the cache folder
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSURL* root = [self cacehPathURL];
+    
+    NSString *file = nil;
+    NSMutableArray* allFiles = [NSMutableArray arrayWithCapacity:1024];
+
+    NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:root.path];
+    
+    NSUInteger total = 0;
+    while ((file = [dirEnum nextObject])) {
+        if ( [[[file pathComponents] lastObject] hasPrefix:@"thumb_"] ) {
+            NSURL* url = [NSURL URLWithString:file relativeToURL:root];
+            NSError* err = nil;
+            NSDictionary* attrs = [fm attributesOfItemAtPath:url.path error:&err];
+            NSUInteger fileSize = [attrs[NSFileSize] unsignedIntegerValue];
+            total += fileSize;
+            [allFiles addObject:url];
+        }
+    }
+    
+    if( total > limit ) {
+        // drop old files
+        [allFiles sortUsingComparator:^NSComparisonResult(NSURL* url1, NSURL* url2) {
+            NSError *err1 = nil, *err2 = nil;
+            NSDictionary* a1 = [fm attributesOfItemAtPath:url1.path error:&err1];
+            NSDictionary* a2 = [fm attributesOfItemAtPath:url2.path error:&err2];
+            NSDate* d1 = a1[NSFileCreationDate];
+            NSDate* d2 = a2[NSFileCreationDate];
+            return [d1 compare:d2];
+        }];
+        
+//        #if DEBUG
+//        
+//        for( NSURL* url in allFiles ) {
+//            NSError* err = nil;
+//            NSDictionary* attrs = [fm attributesOfItemAtPath:url.path error:&err];
+//            NSDate* d = attrs[NSFileCreationDate];
+//            NSLog(@"%@: %@", [d shortDateAndTimeString], url );
+//        }
+//        
+//        #endif
+        
+        NSUInteger i = 0;
+        while( total > limit && allFiles.count > i ) {
+            
+            NSError* err = nil;
+            NSURL* url = allFiles[i++];
+            NSDictionary* attrs = [fm attributesOfItemAtPath:url.path error:&err];
+            NSUInteger fileSize = [attrs[NSFileSize] unsignedIntegerValue];
+            
+            if( [fm removeItemAtURL:url error:&err] ) {
+                total -= fileSize;
+            }
+        }
+    }
+
 }
 
 + (CGSize)sizeOfCachedImage:(NSString*)URLStr {

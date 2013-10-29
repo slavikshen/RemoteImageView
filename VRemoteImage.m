@@ -112,10 +112,12 @@ NSDate* gBaselineTime = nil;
     NSFileManager* fm = [NSFileManager defaultManager];
     if( [fm fileExistsAtPath:path] ) {
         image = [[VRemoteImage alloc] initWithContentsOfURL:fileURL];
-        NSError* err = nil;
-        NSDictionary* attrs = [fm attributesOfItemAtPath:path error:&err];
-        NSDate* timestamp = attrs[NSFileModificationDate];
-        image->_timestamp = timestamp;
+        if( image ) {
+            NSError* err = nil;
+            NSDictionary* attrs = [fm attributesOfItemAtPath:path error:&err];
+            NSDate* timestamp = attrs[NSFileModificationDate];
+            image->_timestamp = timestamp;
+        }
     }
     return image;
 }

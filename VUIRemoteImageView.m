@@ -143,7 +143,9 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
             }
         } else {
             self.isLoading = YES;
-            self.image = [self defaultImage];
+            if( !self.keepImageOfOldSrc ) {
+                self.image = [self defaultImage];
+            }            
             [[VRemoteImageDownloader sharedInstance] downloadImageForURL:_src];
         }
         

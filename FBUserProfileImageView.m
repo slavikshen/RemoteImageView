@@ -122,6 +122,16 @@
     [super drawRect:dirtyRect];
 }
 
-
++ (VRemoteImage*)localCacheImageForUser:(NSString*)userID {
+    NSString* path = nil;
+    VRemoteImage* img = nil;
+    path = [NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?width=128&height=128", userID];
+    img = [VRemoteImage imageForURL:path];
+    if( nil == img ) {
+        path = [NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?width=64&height=64", userID];
+        img = [VRemoteImage imageForURL:path];
+    }
+    return img;
+}
 
 @end

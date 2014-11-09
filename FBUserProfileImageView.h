@@ -18,4 +18,6 @@
 - (void)cancelLoadingUserProfileImage;
 - (void)startLoadingUserProfileImage;
 
++ (VRemoteImage*)localCacheImageForUser:(NSString*)userID;
+
 @end

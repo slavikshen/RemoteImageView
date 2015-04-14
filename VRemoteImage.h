@@ -6,12 +6,17 @@
 //  Copyright (c) 2012 apollobrowser.com. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+
 
 #if TARGET_OS_IPHONE
-#define VRemoteImageSuperClass UIImage
+    #import <UIKit/UIKit.h>
+    #import "UIRoundCornerImageView.h"
+    #define VRemoteImageSuperClass UIImage
+    #define VRemoteImageViewSuperClass UIImageView
 #else
-#define VRemoteImageSuperClass NSImage
+    #import <Cocoa/Cocoa.h>
+    #define VRemoteImageSuperClass NSImage
+    #define VRemoteImageViewSuperClass NSImageView
 #endif
 
 @interface VRemoteImage : VRemoteImageSuperClass

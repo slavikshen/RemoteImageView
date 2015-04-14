@@ -6,16 +6,9 @@
 //  Copyright (c) 2012 apollobrowser.com. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+
 #import "VRemoteImage.h"
 #import "VRemoteImageDownloader.h"
-
-#if TARGET_OS_IPHONE
-#define VRemoteImageViewSuperClass UIImageView
-#else
-#define VRemoteImageViewSuperClass NSImageView
-#endif
-
 
 @class VUIRemoteImageView;
 
@@ -40,5 +33,6 @@
 - (VRemoteImageSuperClass*)defaultImage;
 
 - (void)setup;
+- (void)imageRequestDidFail;
 
 @end

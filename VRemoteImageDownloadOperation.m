@@ -9,8 +9,11 @@
 #import "VRemoteImageDownloadOperation.h"
 #import "NSNotification+Additions.h"
 #import "VRemoteImage.h"
+#import <ImageIO/ImageIO.h>
 
 NSString* const VRemoteImageDownloadCompletedNotication = @"VRemoteImageDownloadCompletedNotication";
+NSString* const VRemoteImageDownloadFailedNotication = @"VRemoteImageDownloadFailedNotication";
+
 
 @implementation VRemoteImageDownloadOperation {
     BOOL _downloading;
@@ -38,15 +41,42 @@ NSString* const VRemoteImageDownloadCompletedNotication = @"VRemoteImageDownload
     NSURL* url = [[NSURL alloc] initWithString:urlStr];
     if( url ) {
         NSData* data = [[NSData alloc] initWithContentsOfURL:url];
+        NSString* src = self.refererUrl;
+        if( nil == src ) {
+            src = self.urlString;
+        }
         if( data ) {
-            // save data to file
-            if (self.refererUrl == nil) {
-                [VRemoteImage saveImage:data forURL:urlStr];
-                [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:VRemoteImageDownloadCompletedNotication object:urlStr];
-            } else {
-                [VRemoteImage saveImage:data forURL:self.refererUrl];
-                [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:VRemoteImageDownloadCompletedNotication object:self.refererUrl];
+            // drop the data if it is not an image
+            NSDictionary* exif = nil;
+            CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)data, NULL);
+            if( source ) {
+                CFDictionaryRef metadataRef =
+                CGImageSourceCopyPropertiesAtIndex ( source, 0, NULL );
+                if ( metadataRef ) {
+                    NSDictionary* immutableMetadata = (__bridge NSDictionary *)metadataRef;
+                    if ( immutableMetadata ) {
+                        exif = [NSDictionary dictionaryWithDictionary : immutableMetadata];
+                    }
+                    CFRelease ( metadataRef );
+                }
+                
+                CFRelease(source);
             }
+            
+            if( nil == exif ) {
+                data = nil;
+            }
+        }
+        
+        if( data ) {
+            
+            // save data to file
+            [VRemoteImage saveImage:data forURL:src];
+            [[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:VRemoteImageDownloadCompletedNotication object:src];
+        } else {
+            [[NSNotificationCenter defaultCenter]
+             postNotificationOnMainThreadWithName:VRemoteImageDownloadFailedNotication
+                                           object:src];
         }
     }
     _downloading = NO;

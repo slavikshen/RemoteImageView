@@ -8,7 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+#ifdef UIKIT_EXTERN
+UIKIT_EXTERN NSString* const VRemoteImageDownloadCompletedNotication;
+UIKIT_EXTERN NSString* const VRemoteImageDownloadFailedNotication;
+#else
 APPKIT_EXTERN NSString* const VRemoteImageDownloadCompletedNotication;
+APPKIT_EXTERN NSString* const VRemoteImageDownloadFailedNotication;
+#endif
 
 @interface VRemoteImageDownloadOperation : NSOperation
 

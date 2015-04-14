@@ -27,7 +27,7 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
     gThumbImageViewDecodeQueue = dispatch_queue_create("thumb_image_decode_queue", 0);
 }
 
-- (id)initWithFrame:(NSRect)frameRect {
+- (id)initWithFrame:(CGRect)frameRect {
 
     self = [super initWithFrame:frameRect];
     [self setup];
@@ -45,7 +45,15 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
 
 - (void)setup {
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_thumbDownloadCompleted:) name:VRemoteImageDownloadCompletedNotication object:nil];
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self
+           selector:@selector(_thumbDownloadCompleted:)
+               name:VRemoteImageDownloadCompletedNotication
+             object:nil];
+    [nc addObserver:self
+           selector:@selector(_thumbDownloadFailed:)
+               name:VRemoteImageDownloadFailedNotication
+             object:nil];
 
 }
 
@@ -53,7 +61,10 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
 
     // cancel request
     self.src = nil;
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:VRemoteImageDownloadCompletedNotication object:nil];
+    
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc removeObserver:self name:VRemoteImageDownloadCompletedNotication object:nil];
+    [nc removeObserver:self name:VRemoteImageDownloadFailedNotication object:nil];
     
     #if !__has_feature(objc_arc)
     [super dealloc];
@@ -101,6 +112,20 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
         if( image ) {
             [self didReceiveImage:image];
         }
+    }
+}
+
+- (void)_thumbDownloadFailed:(NSNotification*)n {
+    
+    if( 0 == _src.length ) {
+        return;
+    }
+    NSString* urlStr = n.object;
+    if( [_src isEqualToString:urlStr] ) {
+        if( _isLoading ) {
+            self.isLoading = NO;
+        }
+        [self imageRequestDidFail];
     }
 }
 
@@ -156,6 +181,10 @@ static dispatch_queue_t gThumbImageViewDecodeQueue;
 
 - (VRemoteImageSuperClass*)defaultImage {
     return nil;
+}
+
+- (void)imageRequestDidFail {
+    
 }
 
 @end

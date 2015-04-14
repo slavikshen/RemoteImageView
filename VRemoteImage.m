@@ -7,7 +7,7 @@
 //
 
 #import "VRemoteImage.h"
-#import "NSString+Extention.h"
+//#import "NSString+Extention.h"
 #import <ImageIO/ImageIO.h>
 
 NSURL* gThumbImageCacheURL = nil;
@@ -84,39 +84,49 @@ NSDate* gBaselineTime = nil;
 
 + (NSURL*)fileURLForURLStr:(NSString*)urlStr {
 
+    NSURL* fileURL = nil;
+    
     NSString* md5 = [urlStr MD5];
     NSURL* url = [NSURL URLWithString:urlStr];
-    NSString* host = [url host];
     
-    NSURL* cachePath = [self cachePathURLForHost:host];
-    
-    NSString* fileName = [NSString stringWithFormat:@"thumb_%@.png", md5];
-    
-    NSURL* fileURL = [NSURL URLWithString:fileName relativeToURL:cachePath];
+    if( url ) {
+
+        NSString* host = [url host];
+        if( host ) {
+            NSURL* cachePath = [self cachePathURLForHost:host];
+            NSString* fileName = [NSString stringWithFormat:@"thumb_%@.png", md5];
+            fileURL = [NSURL URLWithString:fileName relativeToURL:cachePath];
+        }
+
+    }
     
     return fileURL;
-    
 }
 
 + (void)saveImage:(NSData*)data forURL:(NSString*)URLStr {
     NSURL* fileURL = [self fileURLForURLStr:URLStr];
-    [data writeToURL:fileURL atomically:YES];
+    if( fileURL ) {
+        [data writeToURL:fileURL atomically:YES];
+    }
 }
 
 + (VRemoteImage*)imageForURL:(NSString*)URLStr {
     NSURL* fileURL = [self fileURLForURLStr:URLStr];
-    NSString* path = fileURL.path;
     
     VRemoteImage* image = nil;
     
-    NSFileManager* fm = [NSFileManager defaultManager];
-    if( [fm fileExistsAtPath:path] ) {
-        image = [[VRemoteImage alloc] initWithContentsOfURL:fileURL];
-        if( image ) {
-            NSError* err = nil;
-            NSDictionary* attrs = [fm attributesOfItemAtPath:path error:&err];
-            NSDate* timestamp = attrs[NSFileModificationDate];
-            image->_timestamp = timestamp;
+    if( fileURL ) {
+        NSString* path = fileURL.path;
+        NSFileManager* fm = [NSFileManager defaultManager];
+        if( [fm fileExistsAtPath:path] ) {
+            NSData* data = [NSData dataWithContentsOfURL:fileURL];
+            image = [[VRemoteImage alloc] initWithData:data];
+            if( image ) {
+                NSError* err = nil;
+                NSDictionary* attrs = [fm attributesOfItemAtPath:path error:&err];
+                NSDate* timestamp = attrs[NSFileModificationDate];
+                image->_timestamp = timestamp;
+            }
         }
     }
     return image;
@@ -124,7 +134,11 @@ NSDate* gBaselineTime = nil;
 
 + (NSData*)imageDataForURL:(NSString*)URLStr {
     NSURL* fileURL = [self fileURLForURLStr:URLStr];
-    NSData* data = [NSData dataWithContentsOfURL:fileURL];
+    NSData* data = nil;
+    
+    if( fileURL ) {
+        data = [NSData dataWithContentsOfURL:fileURL];
+    }
     return data;
 }
 
@@ -132,9 +146,12 @@ NSDate* gBaselineTime = nil;
 + (BOOL)cacheExistsForURL:(NSString*)URLStr {
 
     NSURL* fileURL = [self fileURLForURLStr:URLStr];
-    NSFileManager* fm = [NSFileManager defaultManager];
+    BOOL exists =  NO;
     
-    BOOL exists = [fm fileExistsAtPath:fileURL.path];
+    if( fileURL ) {
+        NSFileManager* fm = [NSFileManager defaultManager];
+        exists = [fm fileExistsAtPath:fileURL.path];
+    }
 
     return exists;
 }
